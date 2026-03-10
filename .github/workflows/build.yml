@@ -13,12 +13,12 @@ jobs:
         with:
           repository: SagerNet/sing-box
           ref: stable
-          fetch-depth: 1
+          fetch-depth: 0        # ← necesita historial completo para calcular versión
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: ~1.25.8   # ← versión exacta que ellos usan
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -29,29 +29,19 @@ jobs:
       - name: Setup Android NDK
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r25c
+          ndk-version: r28       # ← versión exacta que ellos usan
+          local-cache: true
           add-to-path: true
-
-      - name: Install gomobile
-        run: |
-          go get golang.org/x/mobile/bind
-          go install golang.org/x/mobile/cmd/gomobile@latest
-          go install golang.org/x/mobile/cmd/gobind@latest
-          gomobile init
 
       - name: Build libbox.aar
         run: |
-          cd experimental/libbox
-          go mod download
-          gomobile bind \
-            -target android/arm64,android/arm \
-            -androidapi 21 \
-            -o libbox.aar \
-            .
+          make lib_install
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          go run ./cmd/internal/build_libbox -target android
 
       - name: Upload libbox.aar
         uses: actions/upload-artifact@v4
         with:
           name: libbox-aar
-          path: experimental/libbox/libbox.aar
+          path: "**/*.aar"
           retention-days: 90

@@ -117,3 +117,44 @@ public abstract class io.nekohasekai.libbox.Libbox {
   public static native void writeServiceError(java.lang.String) throws java.lang.Exception;
   static {};
 }
+
+Archive:  libbox.aar
+  inflating: libbox_contents/AndroidManifest.xml  
+  inflating: libbox_contents/proguard.txt  
+  inflating: libbox_contents/classes.jar  
+  inflating: libbox_contents/jni/arm64-v8a/libbox.so  
+  inflating: libbox_contents/R.txt   
+   creating: libbox_contents/res/
+Compiled from "RoutePrefix.java"
+public final class io.nekohasekai.libbox.RoutePrefix implements go.Seq$Proxy {
+  public final int refnum;
+  public final int incRefnum();
+  io.nekohasekai.libbox.RoutePrefix(int);
+  public io.nekohasekai.libbox.RoutePrefix();
+  public native java.lang.String address();
+  public native java.lang.String mask();
+  public native int prefix();
+  public native java.lang.String string();
+  public boolean equals(java.lang.Object);
+  public int hashCode();
+  public java.lang.String toString();
+  static {};
+}
+Compiled from "StringBox.java"
+public final class io.nekohasekai.libbox.StringBox implements go.Seq$Proxy {
+  public final int refnum;
+  public final int incRefnum();
+  io.nekohasekai.libbox.StringBox(int);
+  public io.nekohasekai.libbox.StringBox();
+  public final native java.lang.String getValue();
+  public final native void setValue(java.lang.String);
+  public boolean equals(java.lang.Object);
+  public int hashCode();
+  public java.lang.String toString();
+  static {};
+}
+Compiled from "RoutePrefixIterator.java"
+public interface io.nekohasekai.libbox.RoutePrefixIterator {
+  public abstract boolean hasNext();
+  public abstract io.nekohasekai.libbox.RoutePrefix next();
+}

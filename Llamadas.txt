@@ -1,0 +1,119 @@
+Archive:  libbox.aar
+  inflating: libbox_contents/AndroidManifest.xml  
+  inflating: libbox_contents/proguard.txt  
+  inflating: libbox_contents/classes.jar  
+  inflating: libbox_contents/jni/arm64-v8a/libbox.so  
+  inflating: libbox_contents/R.txt   
+   creating: libbox_contents/res/
+Compiled from "PlatformInterface.java"
+public interface io.nekohasekai.libbox.PlatformInterface {
+  public abstract void autoDetectInterfaceControl(int) throws java.lang.Exception;
+  public abstract void clearDNSCache();
+  public abstract void closeDefaultInterfaceMonitor(io.nekohasekai.libbox.InterfaceUpdateListener) throws java.lang.Exception;
+  public abstract int findConnectionOwner(int, java.lang.String, int, java.lang.String, int) throws java.lang.Exception;
+  public abstract io.nekohasekai.libbox.NetworkInterfaceIterator getInterfaces() throws java.lang.Exception;
+  public abstract boolean includeAllNetworks();
+  public abstract io.nekohasekai.libbox.LocalDNSTransport localDNSTransport();
+  public abstract int openTun(io.nekohasekai.libbox.TunOptions) throws java.lang.Exception;
+  public abstract java.lang.String packageNameByUid(int) throws java.lang.Exception;
+  public abstract io.nekohasekai.libbox.WIFIState readWIFIState();
+  public abstract void sendNotification(io.nekohasekai.libbox.Notification) throws java.lang.Exception;
+  public abstract void startDefaultInterfaceMonitor(io.nekohasekai.libbox.InterfaceUpdateListener) throws java.lang.Exception;
+  public abstract io.nekohasekai.libbox.StringIterator systemCertificates();
+  public abstract int uidByPackageName(java.lang.String) throws java.lang.Exception;
+  public abstract boolean underNetworkExtension();
+  public abstract boolean usePlatformAutoDetectInterfaceControl();
+  public abstract boolean useProcFS();
+  public abstract void writeLog(java.lang.String);
+}
+Compiled from "TunInterface.java"
+public interface io.nekohasekai.libbox.TunInterface {
+  public abstract void close() throws java.lang.Exception;
+  public abstract int fileDescriptor();
+}
+Compiled from "TunOptions.java"
+public interface io.nekohasekai.libbox.TunOptions {
+  public abstract boolean getAutoRoute();
+  public abstract io.nekohasekai.libbox.StringBox getDNSServerAddress() throws java.lang.Exception;
+  public abstract io.nekohasekai.libbox.StringIterator getExcludePackage();
+  public abstract io.nekohasekai.libbox.StringIterator getHTTPProxyBypassDomain();
+  public abstract io.nekohasekai.libbox.StringIterator getHTTPProxyMatchDomain();
+  public abstract java.lang.String getHTTPProxyServer();
+  public abstract int getHTTPProxyServerPort();
+  public abstract io.nekohasekai.libbox.StringIterator getIncludePackage();
+  public abstract io.nekohasekai.libbox.RoutePrefixIterator getInet4Address();
+  public abstract io.nekohasekai.libbox.RoutePrefixIterator getInet4RouteAddress();
+  public abstract io.nekohasekai.libbox.RoutePrefixIterator getInet4RouteExcludeAddress();
+  public abstract io.nekohasekai.libbox.RoutePrefixIterator getInet4RouteRange();
+  public abstract io.nekohasekai.libbox.RoutePrefixIterator getInet6Address();
+  public abstract io.nekohasekai.libbox.RoutePrefixIterator getInet6RouteAddress();
+  public abstract io.nekohasekai.libbox.RoutePrefixIterator getInet6RouteExcludeAddress();
+  public abstract io.nekohasekai.libbox.RoutePrefixIterator getInet6RouteRange();
+  public abstract int getMTU();
+  public abstract boolean getStrictRoute();
+  public abstract boolean isHTTPProxyEnabled();
+}
+Compiled from "Libbox.java"
+public abstract class io.nekohasekai.libbox.Libbox {
+  public static final int CommandClashMode;
+  public static final int CommandCloseConnection;
+  public static final int CommandCloseConnections;
+  public static final int CommandConnections;
+  public static final int CommandGetDeprecatedNotes;
+  public static final int CommandGetSystemProxyStatus;
+  public static final int CommandGroup;
+  public static final int CommandGroupExpand;
+  public static final int CommandLog;
+  public static final int CommandSelectOutbound;
+  public static final int CommandServiceClose;
+  public static final int CommandServiceReload;
+  public static final int CommandSetClashMode;
+  public static final int CommandSetSystemProxyEnabled;
+  public static final int CommandStatus;
+  public static final int CommandURLTest;
+  public static final long ConnectionStateActive;
+  public static final long ConnectionStateAll;
+  public static final long ConnectionStateClosed;
+  public static final int InterfaceTypeCellular;
+  public static final int InterfaceTypeEthernet;
+  public static final int InterfaceTypeOther;
+  public static final int InterfaceTypeWIFI;
+  public static final long MessageTypeError;
+  public static final long MessageTypeProfileContent;
+  public static final long MessageTypeProfileContentRequest;
+  public static final long MessageTypeProfileList;
+  public static final int ProfileTypeLocal;
+  public static final int ProfileTypeRemote;
+  public static final int ProfileTypeiCloud;
+  public static void touch();
+  public static native void checkConfig(java.lang.String) throws java.lang.Exception;
+  public static native void clearServiceError();
+  public static native io.nekohasekai.libbox.ErrorMessage decodeErrorMessage(byte[]) throws java.lang.Exception;
+  public static native int decodeLengthChunk(byte[]);
+  public static native io.nekohasekai.libbox.ProfileContent decodeProfileContent(byte[]) throws java.lang.Exception;
+  public static native io.nekohasekai.libbox.ProfileContentRequest decodeProfileContentRequest(byte[]) throws java.lang.Exception;
+  public static native byte[] encodeChunkedMessage(byte[]);
+  public static native java.lang.String formatBytes(long);
+  public static native io.nekohasekai.libbox.StringBox formatConfig(java.lang.String) throws java.lang.Exception;
+  public static native java.lang.String formatDuration(long);
+  public static native java.lang.String formatMemoryBytes(long);
+  public static native java.lang.String generateRemoteProfileImportLink(java.lang.String, java.lang.String);
+  public static native io.nekohasekai.libbox.CommandClient newCommandClient(io.nekohasekai.libbox.CommandClientHandler, io.nekohasekai.libbox.CommandClientOptions);
+  public static native io.nekohasekai.libbox.CommandServer newCommandServer(io.nekohasekai.libbox.CommandServerHandler, int);
+  public static native io.nekohasekai.libbox.HTTPClient newHTTPClient();
+  public static native io.nekohasekai.libbox.PProfServer newPProfServer(long);
+  public static native io.nekohasekai.libbox.BoxService newService(java.lang.String, io.nekohasekai.libbox.PlatformInterface) throws java.lang.Exception;
+  public static native io.nekohasekai.libbox.CommandClient newStandaloneCommandClient();
+  public static native io.nekohasekai.libbox.WIFIState newWIFIState(java.lang.String, java.lang.String);
+  public static native io.nekohasekai.libbox.ImportRemoteProfile parseRemoteProfileImportLink(java.lang.String) throws java.lang.Exception;
+  public static native java.lang.String proxyDisplayType(java.lang.String);
+  public static native io.nekohasekai.libbox.AndroidVPNType readAndroidVPNType(io.nekohasekai.libbox.StringIterator) throws java.lang.Exception;
+  public static native io.nekohasekai.libbox.StringBox readServiceError() throws java.lang.Exception;
+  public static native void redirectStderr(java.lang.String) throws java.lang.Exception;
+  public static native void setLocale(java.lang.String);
+  public static native void setMemoryLimit(boolean);
+  public static native void setup(io.nekohasekai.libbox.SetupOptions) throws java.lang.Exception;
+  public static native java.lang.String version();
+  public static native void writeServiceError(java.lang.String) throws java.lang.Exception;
+  static {};
+}

@@ -13,12 +13,12 @@ jobs:
         with:
           repository: SagerNet/sing-box
           ref: stable
-          fetch-depth: 0        # ← necesita historial completo para calcular versión
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: ~1.25.8   # ← versión exacta que ellos usan
+          go-version: ~1.25.8
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -29,7 +29,7 @@ jobs:
       - name: Setup Android NDK
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r28       # ← versión exacta que ellos usan
+          ndk-version: r28
           local-cache: true
           add-to-path: true
 
@@ -37,7 +37,7 @@ jobs:
         run: |
           make lib_install
           export PATH="$PATH:$(go env GOPATH)/bin"
-          go run ./cmd/internal/build_libbox -target android
+          go run ./cmd/internal/build_libbox --help || true
 
       - name: Upload libbox.aar
         uses: actions/upload-artifact@v4

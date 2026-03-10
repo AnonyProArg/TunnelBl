@@ -67,38 +67,31 @@ class TunVpnService : VpnService(), PlatformInterface {
         stopTunnel()
     }
 
-    // ---- PlatformInterface ----
-
     override fun openTun(options: TunOptions): Int {
         val builder = Builder()
             .setSession("TunnelBI")
-            .setMtu(options.mtu)
+            .setMtu(options.getMTU())
 
-        // IPv4 addresses
         val inet4Address: RoutePrefixIterator = options.getInet4Address()
         while (inet4Address.hasNext()) {
             val prefix = inet4Address.next()
-            builder.addAddress(prefix.address, prefix.prefix.toInt())
+            builder.addAddress(prefix.address(), prefix.prefix())
         }
 
-        // IPv4 routes
         val inet4Routes: RoutePrefixIterator = options.getInet4RouteAddress()
         while (inet4Routes.hasNext()) {
             val route = inet4Routes.next()
-            builder.addRoute(route.address, route.prefix.toInt())
+            builder.addRoute(route.address(), route.prefix())
         }
 
-        // DNS
         val dns = options.getDNSServerAddress()
-        builder.addDnsServer(dns.string ?: "8.8.8.8")
+        builder.addDnsServer(dns.getValue() ?: "8.8.8.8")
 
         vpnInterface = builder.establish()
         return vpnInterface?.detachFd() ?: -1
     }
 
-    override fun autoDetectInterfaceControl(fd: Int) {
-        protect(fd)
-    }
+    override fun autoDetectInterfaceControl(fd: Int) { protect(fd) }
 
     override fun usePlatformAutoDetectInterfaceControl(): Boolean = true
 
@@ -136,8 +129,6 @@ class TunVpnService : VpnService(), PlatformInterface {
     override fun writeLog(message: String) {
         android.util.Log.d("TunnelBI", message)
     }
-
-    // ---- Config ----
 
     private fun buildConfig() = """
     {

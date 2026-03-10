@@ -8,9 +8,16 @@ import android.net.VpnService
 import android.os.ParcelFileDescriptor
 import go.Seq
 import io.nekohasekai.libbox.BoxService
+import io.nekohasekai.libbox.InterfaceUpdateListener
 import io.nekohasekai.libbox.Libbox
+import io.nekohasekai.libbox.LocalDNSTransport
+import io.nekohasekai.libbox.NetworkInterfaceIterator
+import io.nekohasekai.libbox.Notification as LibboxNotification
 import io.nekohasekai.libbox.PlatformInterface
+import io.nekohasekai.libbox.RoutePrefixIterator
+import io.nekohasekai.libbox.StringIterator
 import io.nekohasekai.libbox.TunOptions
+import io.nekohasekai.libbox.WIFIState
 
 class TunVpnService : VpnService(), PlatformInterface {
 
@@ -38,7 +45,7 @@ class TunVpnService : VpnService(), PlatformInterface {
             boxService = Libbox.newService(buildConfig(), this)
             boxService?.start()
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("TunnelBI", "start error: ${e.message}")
             stopSelf()
         }
     }
@@ -48,7 +55,7 @@ class TunVpnService : VpnService(), PlatformInterface {
             boxService?.close()
             boxService = null
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("TunnelBI", "stop error: ${e.message}")
         }
         vpnInterface?.close()
         vpnInterface = null
@@ -60,45 +67,77 @@ class TunVpnService : VpnService(), PlatformInterface {
         stopTunnel()
     }
 
-    // PlatformInterface — libbox nos pide el FD del TUN
+    // ---- PlatformInterface ----
+
     override fun openTun(options: TunOptions): Int {
         val builder = Builder()
             .setSession("TunnelBI")
-            .setMtu(options.mtu.toInt())
+            .setMtu(options.mtu)
 
-        options.inet4Addresses?.let {
-            for (i in 0 until it.len()) {
-                val addr = it.get(i)
-                builder.addAddress(addr.address, addr.prefix.toInt())
-            }
+        // IPv4 addresses
+        val inet4Address: RoutePrefixIterator = options.getInet4Address()
+        while (inet4Address.hasNext()) {
+            val prefix = inet4Address.next()
+            builder.addAddress(prefix.address, prefix.prefix.toInt())
         }
 
-        options.inet4Routes?.let {
-            for (i in 0 until it.len()) {
-                val route = it.get(i)
-                builder.addRoute(route.address, route.prefix.toInt())
-            }
+        // IPv4 routes
+        val inet4Routes: RoutePrefixIterator = options.getInet4RouteAddress()
+        while (inet4Routes.hasNext()) {
+            val route = inet4Routes.next()
+            builder.addRoute(route.address, route.prefix.toInt())
         }
 
-        builder.addDnsServer("8.8.8.8")
+        // DNS
+        val dns = options.getDNSServerAddress()
+        builder.addDnsServer(dns.string ?: "8.8.8.8")
 
         vpnInterface = builder.establish()
         return vpnInterface?.detachFd() ?: -1
     }
 
-    override fun usePlatformAutoDetectInterfaceControl(): Boolean = true
-
     override fun autoDetectInterfaceControl(fd: Int) {
         protect(fd)
     }
+
+    override fun usePlatformAutoDetectInterfaceControl(): Boolean = true
+
+    override fun useProcFS(): Boolean = false
+
+    override fun findConnectionOwner(
+        ipProtocol: Int, sourceAddress: String, sourcePort: Int,
+        destinationAddress: String, destinationPort: Int
+    ): Int = 0
+
+    override fun packageNameByUid(uid: Int): String = ""
+
+    override fun uidByPackageName(packageName: String): Int = 0
+
+    override fun getInterfaces(): NetworkInterfaceIterator? = null
+
+    override fun underNetworkExtension(): Boolean = false
+
+    override fun includeAllNetworks(): Boolean = false
+
+    override fun clearDNSCache() {}
+
+    override fun readWIFIState(): WIFIState = Libbox.newWIFIState("", "")
+
+    override fun sendNotification(notification: LibboxNotification) {}
+
+    override fun startDefaultInterfaceMonitor(listener: InterfaceUpdateListener) {}
+
+    override fun closeDefaultInterfaceMonitor(listener: InterfaceUpdateListener) {}
+
+    override fun localDNSTransport(): LocalDNSTransport? = null
+
+    override fun systemCertificates(): StringIterator? = null
 
     override fun writeLog(message: String) {
         android.util.Log.d("TunnelBI", message)
     }
 
-    override fun urlTest() {}
-
-    override fun useManualTun(): Boolean = false
+    // ---- Config ----
 
     private fun buildConfig() = """
     {

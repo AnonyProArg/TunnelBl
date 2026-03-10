@@ -25,17 +25,8 @@ jobs:
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: "8.7"
-
-      - name: Build APK
-        run: gradle assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: TunnelBI-apk
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 30
+      - name: Inspect libbox.aar
+        run: |
+          cd app/libs
+          unzip -o libbox.aar -d libbox_contents
+          find libbox_contents -name "*.jar" | xargs -I{} jar tf {} | grep "\.class" | sed 's|/|.|g' | sed 's|\.class||g' | sort

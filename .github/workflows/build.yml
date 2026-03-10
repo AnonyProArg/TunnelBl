@@ -25,11 +25,17 @@ jobs:
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-      - name: Inspect methods
-        run: |
-          cd app/libs
-          unzip -o libbox.aar -d libbox_contents
-          javap -classpath libbox_contents/classes.jar io.nekohasekai.libbox.PlatformInterface
-          javap -classpath libbox_contents/classes.jar io.nekohasekai.libbox.TunInterface
-          javap -classpath libbox_contents/classes.jar io.nekohasekai.libbox.TunOptions
-          javap -classpath libbox_contents/classes.jar io.nekohasekai.libbox.Libbox
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: "8.7"
+
+      - name: Build APK
+        run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TunnelBI-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30

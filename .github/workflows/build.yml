@@ -31,11 +31,11 @@ jobs:
           gradle-version: "8.7"
 
       - name: Build APK
-        run: gradle assembleRelease
+        run: gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TunnelBI-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           retention-days: 30

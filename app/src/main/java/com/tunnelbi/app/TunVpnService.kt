@@ -6,9 +6,13 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.net.VpnService
 import android.os.ParcelFileDescriptor
-import java.io.File
+import go.Seq
+import io.nekohasekai.libbox.BoxService
+import io.nekohasekai.libbox.Libbox
+import io.nekohasekai.libbox.PlatformInterface
+import io.nekohasekai.libbox.TunOptions
 
-class TunVpnService : VpnService() {
+class TunVpnService : VpnService(), PlatformInterface {
 
     companion object {
         const val ACTION_START = "ACTION_START"
@@ -17,7 +21,7 @@ class TunVpnService : VpnService() {
     }
 
     private var vpnInterface: ParcelFileDescriptor? = null
-    private var process: Process? = null
+    private var boxService: BoxService? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
@@ -29,46 +33,23 @@ class TunVpnService : VpnService() {
 
     private fun startTunnel() {
         startForeground(1, buildNotification())
-
-        // 1. Crear interfaz TUN
-        vpnInterface = Builder()
-            .addAddress("172.19.0.1", 30)
-            .addRoute("0.0.0.0", 0)
-            .addDnsServer("8.8.8.8")
-            .addDnsServer("1.1.1.1")
-            .setMtu(1500)
-            .setSession("TunnelBI")
-            .establish()
-
-        val fd = vpnInterface?.fd ?: return
-
-        // 2. Copiar binario de assets a filesDir
-        val binary = File(filesDir, "sing-box")
-        if (!binary.exists()) {
-            assets.open("sing-box-arm64").use { input ->
-                binary.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-            binary.setExecutable(true)
+        Seq.touch()
+        try {
+            boxService = Libbox.newService(buildConfig(), this)
+            boxService?.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            stopSelf()
         }
-
-        // 3. Escribir config VLESS
-        val config = File(filesDir, "config.json")
-        config.writeText(buildConfig())
-
-        // 4. Lanzar sing-box
-        process = ProcessBuilder(
-            binary.absolutePath, "run", "-c", config.absolutePath
-        ).apply {
-            environment()["ANDROID_VPN_FD"] = fd.toString()
-            redirectErrorStream(true)
-        }.start()
     }
 
     private fun stopTunnel() {
-        process?.destroy()
-        process = null
+        try {
+            boxService?.close()
+            boxService = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         vpnInterface?.close()
         vpnInterface = null
         stopForeground(true)
@@ -78,6 +59,46 @@ class TunVpnService : VpnService() {
     override fun onDestroy() {
         stopTunnel()
     }
+
+    // PlatformInterface — libbox nos pide el FD del TUN
+    override fun openTun(options: TunOptions): Int {
+        val builder = Builder()
+            .setSession("TunnelBI")
+            .setMtu(options.mtu.toInt())
+
+        options.inet4Addresses?.let {
+            for (i in 0 until it.len()) {
+                val addr = it.get(i)
+                builder.addAddress(addr.address, addr.prefix.toInt())
+            }
+        }
+
+        options.inet4Routes?.let {
+            for (i in 0 until it.len()) {
+                val route = it.get(i)
+                builder.addRoute(route.address, route.prefix.toInt())
+            }
+        }
+
+        builder.addDnsServer("8.8.8.8")
+
+        vpnInterface = builder.establish()
+        return vpnInterface?.detachFd() ?: -1
+    }
+
+    override fun usePlatformAutoDetectInterfaceControl(): Boolean = true
+
+    override fun autoDetectInterfaceControl(fd: Int) {
+        protect(fd)
+    }
+
+    override fun writeLog(message: String) {
+        android.util.Log.d("TunnelBI", message)
+    }
+
+    override fun urlTest() {}
+
+    override fun useManualTun(): Boolean = false
 
     private fun buildConfig() = """
     {
@@ -111,7 +132,6 @@ class TunVpnService : VpnService() {
             NotificationManager.IMPORTANCE_LOW
         )
         manager.createNotificationChannel(channel)
-
         return Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("TunnelBI")
             .setContentText("VPN activa")

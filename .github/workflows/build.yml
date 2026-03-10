@@ -25,8 +25,11 @@ jobs:
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-      - name: Inspect libbox.aar
+      - name: Inspect methods
         run: |
           cd app/libs
           unzip -o libbox.aar -d libbox_contents
-          find libbox_contents -name "*.jar" | xargs -I{} jar tf {} | grep "\.class" | sed 's|/|.|g' | sed 's|\.class||g' | sort
+          javap -classpath libbox_contents/classes.jar io.nekohasekai.libbox.PlatformInterface
+          javap -classpath libbox_contents/classes.jar io.nekohasekai.libbox.TunInterface
+          javap -classpath libbox_contents/classes.jar io.nekohasekai.libbox.TunOptions
+          javap -classpath libbox_contents/classes.jar io.nekohasekai.libbox.Libbox

@@ -34,6 +34,7 @@ jobs:
 
       - name: Install gomobile
         run: |
+          go get golang.org/x/mobile/bind
           go install golang.org/x/mobile/cmd/gomobile@latest
           go install golang.org/x/mobile/cmd/gobind@latest
           gomobile init
@@ -41,6 +42,7 @@ jobs:
       - name: Build libbox.aar
         run: |
           cd experimental/libbox
+          go mod download
           gomobile bind \
             -target android/arm64,android/arm \
             -androidapi 21 \

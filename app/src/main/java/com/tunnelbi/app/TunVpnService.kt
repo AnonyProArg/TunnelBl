@@ -131,29 +131,51 @@ class TunVpnService : VpnService(), PlatformInterface {
     }
 
     private fun buildConfig() = """
+{
+  "log": { "level": "warn" },
+  "dns": {
+    "servers": [{
+      "tag": "remote",
+      "address": "8.8.8.8"
+    }]
+  },
+  "inbounds": [{
+    "type": "tun",
+    "interface_name": "tun0",
+    "inet4_address": "172.19.0.1/30",
+    "auto_route": true,
+    "strict_route": false,
+    "stack": "system",
+    "mtu": 9000
+  }],
+  "outbounds": [
     {
-      "log": { "level": "info" },
-      "inbounds": [{
-        "type": "tun",
-        "interface_name": "tun0",
-        "inet4_address": "172.19.0.1/30",
-        "auto_route": true,
-        "strict_route": false,
-        "stack": "system"
-      }],
-      "outbounds": [{
-        "type": "vless",
-        "tag": "proxy",
-        "server": "TU_SERVIDOR",
-        "server_port": 443,
-        "uuid": "TU_UUID",
-        "tls": {
-          "enabled": true,
-          "server_name": "TU_DOMINIO"
-        }
-      }]
+      "type": "vless",
+      "tag": "proxy",
+      "server": "$LOCAL_HOST",
+      "server_port": $LOCAL_PORT,
+      "uuid": "11111111-1111-1111-1111-111111111111",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": false
+      },
+      "multiplex": {
+        "enabled": true,
+        "protocol": "smux",
+        "max_streams": 32,
+        "padding": false
+      }
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
     }
-    """.trimIndent()
+  ],
+  "route": {
+    "final": "proxy"
+  }
+}
+""".trimIndent() 
 
     private fun buildNotification(): Notification {
         val manager = getSystemService(NotificationManager::class.java)

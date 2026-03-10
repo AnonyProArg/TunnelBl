@@ -25,6 +25,9 @@ class TunVpnService : VpnService(), PlatformInterface {
         const val ACTION_START = "ACTION_START"
         const val ACTION_STOP = "ACTION_STOP"
         private const val CHANNEL_ID = "tunnelbi_vpn"
+        private const val LOCAL_HOST = "127.0.0.1"
+        private const val LOCAL_PORT = 1081
+        private const val VLESS_UUID = "11111111-1111-1111-1111-111111111111"
     }
 
     private var vpnInterface: ParcelFileDescriptor? = null
@@ -92,45 +95,27 @@ class TunVpnService : VpnService(), PlatformInterface {
     }
 
     override fun autoDetectInterfaceControl(fd: Int) { protect(fd) }
-
     override fun usePlatformAutoDetectInterfaceControl(): Boolean = true
-
     override fun useProcFS(): Boolean = false
-
-    override fun findConnectionOwner(
-        ipProtocol: Int, sourceAddress: String, sourcePort: Int,
-        destinationAddress: String, destinationPort: Int
-    ): Int = 0
-
+    override fun findConnectionOwner(ipProtocol: Int, sourceAddress: String, sourcePort: Int, destinationAddress: String, destinationPort: Int): Int = 0
     override fun packageNameByUid(uid: Int): String = ""
-
     override fun uidByPackageName(packageName: String): Int = 0
-
     override fun getInterfaces(): NetworkInterfaceIterator? = null
-
     override fun underNetworkExtension(): Boolean = false
-
     override fun includeAllNetworks(): Boolean = false
-
     override fun clearDNSCache() {}
-
     override fun readWIFIState(): WIFIState = Libbox.newWIFIState("", "")
-
     override fun sendNotification(notification: LibboxNotification) {}
-
     override fun startDefaultInterfaceMonitor(listener: InterfaceUpdateListener) {}
-
     override fun closeDefaultInterfaceMonitor(listener: InterfaceUpdateListener) {}
-
     override fun localDNSTransport(): LocalDNSTransport? = null
-
     override fun systemCertificates(): StringIterator? = null
-
     override fun writeLog(message: String) {
         android.util.Log.d("TunnelBI", message)
     }
 
-    private fun buildConfig() = """
+    private fun buildConfig(): String {
+        return """
 {
   "log": { "level": "warn" },
   "dns": {
@@ -154,7 +139,7 @@ class TunVpnService : VpnService(), PlatformInterface {
       "tag": "proxy",
       "server": "$LOCAL_HOST",
       "server_port": $LOCAL_PORT,
-      "uuid": "11111111-1111-1111-1111-111111111111",
+      "uuid": "$VLESS_UUID",
       "packet_encoding": "xudp",
       "tls": {
         "enabled": false
@@ -175,7 +160,8 @@ class TunVpnService : VpnService(), PlatformInterface {
     "final": "proxy"
   }
 }
-""".trimIndent() 
+        """.trimIndent()
+    }
 
     private fun buildNotification(): Notification {
         val manager = getSystemService(NotificationManager::class.java)
